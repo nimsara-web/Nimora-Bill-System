@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}New Bill{% endblock %}
+
+{% block content %}
+<h1>🧾 New Bill</h1>
+
+<div class="invoice-form">
+    <div class="form-group">
+        <label>Customer</label>
+        <select id="customer" required>
+            <option value="">-- Select Customer --</option>
+            {% for c in customers %}
+            <option value="{{ c.id }}">{{ c.name }} ({{ c.phone or 'no phone' }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Payment Method</label>
+        <select id="payment">
+            <option>Cash</option>
+            <option>Card</option>
+            <option>Online</option>
+            <option>Credit</option>
+        </select>
+    </div>
+</div>
+
+<h2>🛒 Add Items</h2>
+
+{% if products %}
+<div class="form-row">
+    <select id="product" style="flex: 2;">
+        {% for p in products %}
+        <option value="{{ p.id }}" data-price="{{ p.price }}" data-stock="{{ p.stock }}">
+            {{ p.name }} — {{ currency }} {{ p.price }} (Stock: {{ p.stock }})
+        </option>
+        {% endfor %}
+    </select>
+    <input type="number" id="qty" value="1" min="1" style="max-width:110px;">
+    <button type="button" onclick="addItem()">+ Add</button>
+</div>
+
+<table id="itemsTable">
+    <thead>
+        <tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th><th></th></tr>
+    </thead>
+    <tbody id="itemsBody">
+        <tr><td colspan="5" class="empty-row">No items added yet</td></tr>
+    </tbody>
+</table>
+
+<div class="total-box">
+    <h2>Total: {{ currency }} <span id="total">0.00</span></h2>
+    <div class="discount-row">
+        <label>Discount ({{ currency }})</label>
+        <input type="number" id="discount" value="0" min="0" step="0.01" onchange="render()">
+    </div>
+</div>
+
+<button onclick="saveInvoice()" class="save-btn">💾 Save & Generate Bill</button>
+{% else %}
+<p class="empty">No products in stock. <a href="{{ url_for('products') }}">Add products first →</a></p>
+{% endif %}
+
+<script>
+let items = [];
+const CURRENCY = "{{ currency }}";
+
+function addItem() {
+    const sel = document.getElementById('product');
+    const pid = sel.value;
+    const pname = sel.options[sel.selectedIndex].text.split(' — ')[0];
+    const price = parseFloat(sel.options[sel.selectedIndex].dataset.price);
+    const stock = parseInt(sel.options[sel.selectedIndex].dataset.stock);
+    const qty = parseInt(document.getElementById('qty').value);
+
+    if (qty < 1) return alert('Quantity must be at least 1');
+    if (qty > stock) return alert('Not enough stock! Available: ' + stock);
+
+    const existing = items.find(i => i.product_id === pid);
+    if (existing) {
+        if (existing.qty + qty > stock) return alert('Not enough stock!');
+        existing.qty += qty;
+    } else {
+        items.push({product_id: pid, name: pname, qty, price});
+    }
+    document.getElementById('qty').value = 1;
+    render();
+}
+
+function render() {
+    const body = document.getElementById('itemsBody');
+    if (items.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-row">No items added yet</td></tr>';
+        document.getElementById('total').innerText = '0.00';
+        return;
+    }
+    let subtotal = 0;
+    body.innerHTML = '';
+    items.forEach((it, i) => {
+        const sub = it.qty * it.price;
+        subtotal += sub;
+        body.innerHTML += `<tr>
+            <td><b>${it.name}</b></td>
+            <td>${it.qty}</td>
+            <td>${CURRENCY} ${it.price.toFixed(2)}</td>
+            <td><b>${CURRENCY} ${sub.toFixed(2)}</b></td>
+            <td><button type="button" onclick="removeItem(${i})" class="btn-delete">❌</button></td>
+        </tr>`;
+    });
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+    const total = subtotal - discount;
+    document.getElementById('total').innerText = total.toFixed(2);
+}
+
+function removeItem(i) {
+    items.splice(i, 1);
+    render();
+}
+
+function saveInvoice() {
+    const customer_id = document.getElementById('customer').value;
+    if (!customer_id) return alert('Please select a customer!');
+    if (items.length === 0) return alert('Please add at least one item!');
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+
+    fetch('/invoice/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            customer_id: customer_id,
+            items: items,
+            payment_method: document.getElementById('payment').value,
+            discount: discount
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.status === 'ok') {
+            window.location.href = '/invoice/view/' + d.invoice_id;
+        } else {
+            alert('Error saving invoice!');
+        }
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+</script>
+{% endblock %}

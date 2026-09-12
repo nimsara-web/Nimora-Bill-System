@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ invoice.id }} - {{ business_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #eef1f6;
+            padding: 30px 20px;
+            color: #1a202c;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .invoice-wrapper {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ===== HEADER ===== */
+        .inv-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e57c2 100%);
+            color: white;
+            padding: 35px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .inv-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-block img {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            padding: 4px;
+            border: 3px solid rgba(255,255,255,0.4);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .brand-placeholder {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: white;
+            color: #1e3c72;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            font-weight: 800;
+            border: 3px solid rgba(255,255,255,0.4);
+        }
+
+        .brand-info h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .brand-info .tagline {
+            font-style: italic;
+            font-size: 12px;
+            opacity: 0.9;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-info .contact-info {
+            margin-top: 8px;
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .inv-title {
+            text-align: right;
+            position: relative;
+            z-index: 1;
+        }
+
+        .inv-title h2 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .inv-title .inv-num {
+            font-size: 15px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        .inv-title .inv-date {
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        /* ===== INFO SECTION ===== */
+        .inv-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px 40px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-box h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .info-box .primary {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .info-box .secondary {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        /* ===== ITEMS TABLE ===== */
+        .inv-items {
+            padding: 30px 40px;
+        }
+
+        .inv-items table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inv-items thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 14px 15px;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .inv-items thead th:last-child,
+        .inv-items tbody td:last-child { text-align: right; }
+
+        .inv-items tbody td {
+            padding: 14px 15px;
+            font-size: 13px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+        }
+
+        .inv-items tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .inv-items tbody td:first-child {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* ===== TOTALS ===== */
+        .inv-totals {
+            padding: 0 40px 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .totals-box {
+            width: 320px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .total-row.grand {
+            border-top: 2px solid #cbd5e1;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e3c72;
+        }
+
+        .total-row .label { font-weight: 600; }
+        .total-row .value { font-weight: 700; color: #1e293b; }
+
+        .payment-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* ===== FOOTER ===== */
+        .inv-footer {
+            background: #1e293b;
+            color: white;
+            padding: 25px 40px;
+            text-align: center;
+        }
+
+        .inv-footer .thanks {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .inv-footer .footer-brand {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .inv-footer .footer-contact {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* ===== ACTIONS ===== */
+        .inv-actions {
+            text-align: center;
+            padding: 25px 20px;
+            background: #f8fafc;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .inv-actions button,
+        .inv-actions a {
+            padding: 13px 28px;
+            font-size: 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            font-weight: 700;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            box-shadow: 0 4px 15px rgba(30,60,114,0.3);
+        }
+        .btn-print:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(30,60,114,0.4); }
+
+        .btn-back {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+        }
+        .btn-back:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
+
+        .btn-new {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+        }
+        .btn-new:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,0.4); }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body { background: white; padding: 0; font-size: 12px; }
+            .invoice-wrapper { box-shadow: none; border-radius: 0; max-width: 100%; }
+            .inv-actions { display: none !important; }
+            .inv-header { padding: 25px 30px; }
+            .inv-items { padding: 20px 30px; }
+            .inv-totals { padding: 0 30px 20px; }
+            .inv-info { padding: 20px 30px; }
+            .inv-footer { padding: 15px 30px; }
+            .inv-title h2 { font-size: 30px; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 700px) {
+            body { padding: 12px 8px; }
+            .inv-header { padding: 22px 20px; }
+            .brand-block img, .brand-placeholder { width: 55px; height: 55px; font-size: 24px; }
+            .brand-info h1 { font-size: 20px; }
+            .inv-title h2 { font-size: 24px; letter-spacing: 2px; }
+            .inv-info { grid-template-columns: 1fr; padding: 20px; }
+            .inv-items { padding: 20px; }
+            .inv-items thead th, .inv-items tbody td { padding: 10px 8px; font-size: 11px; }
+            .inv-totals { padding: 0 20px 20px; }
+            .totals-box { width: 100%; }
+            .inv-footer { padding: 20px; }
+            .inv-actions { padding: 18px 12px; }
+            .inv-actions button, .inv-actions a { padding: 11px 18px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-wrapper">
+
+    <!-- ===== HEADER ===== -->
+    <div class="inv-header">
+        <div class="brand-block">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="{{ business_name }}">
+            {% else %}
+                <div class="brand-placeholder">N</div>
+            {% endif %}
+            <div class="brand-info">
+                <h1>{{ business_name }}</h1>
+                <div class="tagline">{{ tagline }}</div>
+                <div class="contact-info">
+                    📞 {{ phone }}{% if email %} &nbsp;|&nbsp; ✉️ {{ email }}{% endif %}
+                    {% if address %}<br>📍 {{ address }}{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="inv-title">
+            <h2>INVOICE</h2>
+            <div class="inv-num">#{{ "%05d"|format(invoice.id) }}</div>
+            <div class="inv-date">📅 {{ invoice.date }}</div>
+        </div>
+    </div>
+
+    <!-- ===== INFO ===== -->
+    <div class="inv-info">
+        <div class="info-box">
+            <h4>Billed To</h4>
+            <div class="primary">{{ customer.name }}</div>
+            <div class="secondary">
+                {% if customer.phone %}📞 {{ customer.phone }}<br>{% endif %}
+                {% if customer.email %}✉️ {{ customer.email }}<br>{% endif %}
+                {% if customer.address %}📍 {{ customer.address }}{% endif %}
+            </div>
+        </div>
+        <div class="info-box" style="text-align: right;">
+            <h4>Payment Details</h4>
+            <div style="margin-top: 6px;">
+                <span class="payment-badge">{{ invoice.payment_method }}</span>
+            </div>
+            <div class="secondary" style="margin-top: 12px;">
+                Status: <b style="color: #10b981;">✓ Paid</b>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ITEMS ===== -->
+    <div class="inv-items">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Description</th>
+                    <th style="width: 70px; text-align: center;">Qty</th>
+                    <th style="width: 130px; text-align: right;">Unit Price</th>
+                    <th style="width: 140px;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in items %}
+                <tr>
+                    <td>{{ i.name }}</td>
+                    <td style="text-align: center;">{{ i.qty }}</td>
+                    <td style="text-align: right;">{{ currency }} {{ "%.2f"|format(i.price) }}</td>
+                    <td>{{ currency }} {{ "%.2f"|format(i.qty * i.price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ===== TOTALS ===== -->
+    <div class="inv-totals">
+        <div class="totals-box">
+            <div class="total-row">
+                <span class="label">Subtotal</span>
+                <span class="value">{{ currency }} {{ "%.2f"|format(invoice.total + (invoice.discount or 0)) }}</span>
+            </div>
+            {% if invoice.discount and invoice.discount > 0 %}
+            <div class="total-row" style="color: #ef4444;">
+                <span class="label">Discount</span>
+                <span class="value" style="color: #ef4444;">− {{ currency }} {{ "%.2f"|format(invoice.discount) }}</span>
+            </div>
+            {% endif %}
+            <div class="total-row grand">
+                <span>Total</span>
+                <span>{{ currency }} {{ "%.2f"|format(invoice.total) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="inv-footer">
+        <div class="thanks">Thank You! 🙏</div>
+        <div class="footer-brand">{{ business_name }} — {{ tagline }}</div>
+        <div class="footer-contact">
+            📞 {{ phone }}{% if email %} | ✉️ {{ email }}{% endif %}
+        </div>
+    </div>
+
+    <!-- ===== ACTIONS ===== -->
+    <div class="inv-actions">
+        <button class="btn-print" onclick="window.print()">🖨️ Print Bill</button>
+        <a href="{{ url_for('new_invoice') }}" class="btn-new">➕ New Bill</a>
+        <a href="{{ url_for('dashboard') }}" class="btn-back">← Dashboard</a>
+    </div>
+
+</div>
+
+</body>
+</html>

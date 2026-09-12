@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h1>📊 Sales Reports</h1>
+
+<div class="cards">
+    <div class="card card-purple">
+        <span>💰</span>
+        <p>Total Sales</p>
+        <b>{{ currency }} {{ "%.2f"|format(total_sales) }}</b>
+    </div>
+    <div class="card card-green">
+        <span>📅</span>
+        <p>Today</p>
+        <b>{{ currency }} {{ "%.2f"|format(today_sales) }}</b>
+    </div>
+    <div class="card card-blue">
+        <span>🧾</span>
+        <p>Total Invoices</p>
+        <b>{{ invoices|length }}</b>
+    </div>
+</div>
+
+<h2>📋 All Invoices</h2>
+
+{% if invoices %}
+<table>
+    <thead>
+        <tr>
+            <th>#</th><th>Date</th><th>Customer</th>
+            <th>Total</th><th>Payment</th><th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in invoices %}
+        <tr>
+            <td><b>#{{ i.id }}</b></td>
+            <td>{{ i.date }}</td>
+            <td>{{ i.customer_name or '-' }}</td>
+            <td><b>{{ currency }} {{ "%.2f"|format(i.total) }}</b></td>
+            <td>{{ i.payment_method }}</td>
+            <td>
+                <a href="{{ url_for('view_invoice', id=i.id) }}" class="btn-view" target="_blank">View</a>
+                <a href="{{ url_for('delete_invoice', id=i.id) }}" class="btn-delete"
+                   onclick="return confirm('Delete invoice #{{ i.id }}?')">🗑️</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">No invoices yet.</p>
+{% endif %}
+{% endblock %}

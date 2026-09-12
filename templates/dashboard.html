@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="cards">
+    <div class="card card-blue">
+        <span>📦</span>
+        <p>Products</p>
+        <b>{{ tp }}</b>
+    </div>
+    <div class="card card-green">
+        <span>👥</span>
+        <p>Customers</p>
+        <b>{{ tc }}</b>
+    </div>
+    <div class="card card-orange">
+        <span>🧾</span>
+        <p>Invoices</p>
+        <b>{{ ti }}</b>
+    </div>
+    <div class="card card-purple">
+        <span>💰</span>
+        <p>Total Sales</p>
+        <b>{{ currency }} {{ "%.2f"|format(ts) }}</b>
+    </div>
+</div>
+
+<div class="cards">
+    <div class="card card-green" style="grid-column: span 2;">
+        <span>📅</span>
+        <p>Today's Sales</p>
+        <b>{{ currency }} {{ "%.2f"|format(today_sales) }}</b>
+    </div>
+</div>
+
+{% if low_stock %}
+<div class="alert-box">
+    <h3>⚠️ Low Stock Alert</h3>
+    <table>
+        <thead>
+            <tr><th>Product</th><th>Stock</th></tr>
+        </thead>
+        <tbody>
+            {% for p in low_stock %}
+            <tr><td>{{ p.name }}</td><td class="low-stock">{{ p.stock }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<h2>🕒 Recent Invoices</h2>
+{% if recent %}
+<table>
+    <thead>
+        <tr><th>#</th><th>Date</th><th>Customer</th><th>Total</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+        {% for i in recent %}
+        <tr>
+            <td><b>#{{ i.id }}</b></td>
+            <td>{{ i.date }}</td>
+            <td>{{ i.customer_name or '-' }}</td>
+            <td><b>{{ currency }} {{ "%.2f"|format(i.total) }}</b></td>
+            <td><a href="{{ url_for('view_invoice', id=i.id) }}" class="btn-view">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">No invoices yet. <a href="{{ url_for('new_invoice') }}">Create one →</a></p>
+{% endif %}
+{% endblock %}

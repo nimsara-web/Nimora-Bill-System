@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ business_name }} - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ logo_url }}">
+</head>
+<body class="login-page">
+
+<div class="login-box">
+    <div class="login-brand">
+        {% if logo_url %}
+            <img src="{{ logo_url }}" alt="Nimora" class="login-logo">
+        {% else %}
+            <div class="login-logo-placeholder">N</div>
+        {% endif %}
+        <h1>{{ business_name }}</h1>
+        <p class="tagline">{{ tagline }}</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="flash error">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <input name="username" placeholder="Username" required autofocus autocomplete="username">
+        <input name="password" type="password" placeholder="Password" required autocomplete="current-password">
+        <button type="submit">🔐 Login</button>
+    </form>
+
+    <p class="hint">Default: <b>admin</b> / <b>admin123</b></p>
+    <p class="contact-login">📞 {{ phone }}</p>
+</div>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

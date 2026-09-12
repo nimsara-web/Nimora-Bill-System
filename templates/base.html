@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ business_name }} - {% block title %}Bill System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ logo_url }}">
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header class="main-header">
+    <div class="brand">
+        {% if logo_url %}
+            <img src="{{ logo_url }}" alt="Nimora" class="logo">
+        {% else %}
+            <div class="logo-placeholder">N</div>
+        {% endif %}
+        <div class="brand-text">
+            <h1>{{ business_name }}</h1>
+            <p class="tagline">{{ tagline }}</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="contact">📞 {{ phone }}</span>
+        {% if session.username %}
+        <span class="user">👤 {{ session.username }}</span>
+        {% endif %}
+        <div class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</div>
+    </div>
+</header>
+
+<!-- ========== NAV ========== -->
+<nav>
+    <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
+    <a href="{{ url_for('products') }}">📦 Products</a>
+    <a href="{{ url_for('customers') }}">👥 Customers</a>
+    <a href="{{ url_for('new_invoice') }}">🧾 New Bill</a>
+    <a href="{{ url_for('reports') }}">📊 Reports</a>
+    {% if session.role == 'admin' %}
+    <a href="{{ url_for('reset_page') }}" class="reset-link">🔄 Reset</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}" class="logout">🚪 Logout</a>
+</nav>
+
+<!-- ========== FLASH ========== -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+            {% for category, msg in messages %}
+                <div class="flash {% if category == 'error' %}error{% endif %}">{{ msg }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- ========== CONTENT ========== -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- ========== FOOTER ========== -->
+<footer class="main-footer">
+    <p class="brand-footer">{{ business_name }}</p>
+    <p style="font-style: italic; opacity: 0.85;">{{ tagline }}</p>
+    <p>📞 {{ phone }} {% if email %} | ✉️ {{ email }}{% endif %}</p>
+    <p class="copyright">© {{ now.year }} {{ business_name }}. All rights reserved.</p>
+</footer>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Reset Data{% endblock %}
+
+{% block content %}
+<h1>🔄 Reset & Backup</h1>
+
+<div class="warning-box">
+    <h3>⚠️ Warning!</h3>
+    <p>මේ page එකෙන් data delete කරන්න පුළුවන්. <b>Delete කරපු data ආයෙ ගන්න බෑ!</b></p>
+    <p>හැම action එකකට කලින් <b>confirm</b> එකක් අහනවා. Backup එකක් ගන්නත් පුළුවන්.</p>
+</div>
+
+<!-- ===== BACKUP SECTION ===== -->
+<h2>💾 Backup</h2>
+<a href="{{ url_for('backup_create') }}" class="btn btn-backup-create">➕ Create Backup Now</a>
+
+{% if backups %}
+<div class="backup-list">
+    {% for b in backups %}
+    <div class="backup-item">
+        <span class="name">📁 {{ b }}</span>
+        <div class="actions">
+            <a href="{{ url_for('backup_download', filename=b) }}" class="btn-sm btn-download">⬇️ Download</a>
+            <form method="POST" action="{{ url_for('backup_delete', filename=b) }}"
+                  style="display:inline" onsubmit="return confirm('Delete backup {{ b }}?')">
+                <button type="submit" class="btn-sm btn-delete">🗑️</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty">No backups yet. Create one above ↑</p>
+{% endif %}
+
+<!-- ===== CURRENT DATA ===== -->
+<h2>📊 Current Data</h2>
+<div class="cards">
+    <div class="card card-blue">
+        <span>📦</span>
+        <p>Products</p>
+        <b>{{ counts.products }}</b>
+    </div>
+    <div class="card card-green">
+        <span>👥</span>
+        <p>Customers</p>
+        <b>{{ counts.customers }}</b>
+    </div>
+    <div class="card card-orange">
+        <span>🧾</span>
+        <p>Invoices</p>
+        <b>{{ counts.invoices }}</b>
+    </div>
+    <div class="card card-purple">
+        <span>📋</span>
+        <p>Invoice Items</p>
+        <b>{{ counts.invoice_items }}</b>
+    </div>
+</div>
+
+<!-- ===== DELETE OPTIONS ===== -->
+<h2>🗑️ Delete Options</h2>
+
+<div class="reset-grid">
+    <div class="reset-card">
+        <h3>📦 Products</h3>
+        <p>Delete all products (stock එකත් එක්කම)</p>
+        <form method="POST" action="{{ url_for('reset_products') }}"
+              onsubmit="return confirm('⚠️ All products delete කරන්නද?\n\nමේක ආයෙ ගන්න බෑ!')">
+            <button type="submit" class="btn-danger">🗑️ Delete All Products</button>
+        </form>
+    </div>
+
+    <div class="reset-card">
+        <h3>👥 Customers</h3>
+        <p>Delete all customers</p>
+        <form method="POST" action="{{ url_for('reset_customers') }}"
+              onsubmit="return confirm('⚠️ All customers delete කරන්නද?\n\nමේක ආයෙ ගන්න බෑ!')">
+            <button type="submit" class="btn-danger">🗑️ Delete All Customers</button>
+        </form>
+    </div>
+
+    <div class="reset-card">
+        <h3>🧾 Invoices</h3>
+        <p>Delete all invoices & bill records</p>
+        <form method="POST" action="{{ url_for('reset_invoices') }}"
+              onsubmit="return confirm('⚠️ All invoices delete කරන්නද?\n\nමේක ආයෙ ගන්න බෑ!')">
+            <button type="submit" class="btn-danger">🗑️ Delete All Invoices</button>
+        </form>
+    </div>
+
+    <div class="reset-card reset-card-all">
+        <h3>🔥 Delete EVERYTHING</h3>
+        <p>Products + Customers + Invoices ඔක්කොම එකපාරට</p>
+        <form method="POST" action="{{ url_for('reset_all') }}"
+              onsubmit="return confirm('🔥🔥 EVERYTHING DELETE කරන්නද?\n\nProducts, Customers, Invoices ඔක්කොම යනවා!\n\nමේක ආයෙ ගන්න බෑ!')">
+            <button type="submit" class="btn-danger btn-danger-all">🔥 Delete Everything</button>
+        </form>
+    </div>
+</div>
+
+<p style="margin-top: 30px; text-align: center;">
+    <a href="{{ url_for('dashboard') }}" class="btn-view" style="padding: 12px 25px; font-size: 14px;">
+        ← Back to Dashboard
+    </a>
+</p>
+
+{% endblock %}
