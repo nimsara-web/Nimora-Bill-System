@@ -992,3 +992,163 @@ button:active { transform: translateY(0); }
     background: var(--accent-primary);
     color: white;
 }
+
+
+/* ============================================
+   SETTINGS PAGE
+   ============================================ */
+
+.settings-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.settings-section h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 18px;
+    border-bottom: 2px solid var(--accent-primary);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.hint-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.hint-text b {
+    color: var(--accent-primary);
+}
+
+/* Badges */
+.badge-you {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-role {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-admin {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.badge-staff {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+/* Small buttons */
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 4px;
+    transition: var(--transition);
+}
+
+.btn-small:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(99,102,241,0.3);
+}
+
+.btn-small.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.btn-small.btn-danger:hover {
+    box-shadow: 0 4px 10px rgba(239,68,68,0.3);
+}
+
+/* Info box */
+.info-box {
+    padding: 15px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border-left: 4px solid var(--accent-primary);
+}
+
+.info-box p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: fadeUp 0.3s ease;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--text-primary);
+    font-size: 20px;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    padding: 10px 20px;
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .settings-section {
+        padding: 15px;
+    }
+    .settings-section h2 {
+        font-size: 16px;
+    }
+}
