@@ -322,6 +322,144 @@ def reports():
     return render_template('reports.html', invoices=invoices,
                            total_sales=total_sales, today_sales=today_sales)
 
+
+
+
+
+# ---------- User Management (Settings) ----------
+@app.route('/settings')
+@login_required
+def settings_page():
+    conn = get_db()
+    users = conn.execute('SELECT id, username, role FROM users ORDER BY id').fetchall()
+    conn.close()
+    return render_template('settings.html', users=users)
+
+@app.route('/settings/change-password', methods=['POST'])
+@login_required
+def change_password():
+    old_pass = request.form['old_password']
+    new_pass = request.form['new_password']
+    confirm_pass = request.form['confirm_password']
+
+    if new_pass != confirm_pass:
+        flash('New passwords do not match!', 'error')
+        return redirect(url_for('settings_page'))
+
+    if len(new_pass) < 4:
+        flash('Password must be at least 4 characters!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn = get_db()
+    user = conn.execute('SELECT * FROM users WHERE id=?', (session['user_id'],)).fetchone()
+
+    if not check_password_hash(user['password'], old_pass):
+        conn.close()
+        flash('Current password is wrong!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn.execute('UPDATE users SET password=? WHERE id=?',
+                 (generate_password_hash(new_pass), session['user_id']))
+    conn.commit()
+    conn.close()
+    flash('✅ Password changed successfully!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.route('/settings/change-username', methods=['POST'])
+@login_required
+def change_username():
+    new_username = request.form['new_username'].strip()
+    if len(new_username) < 3:
+        flash('Username must be at least 3 characters!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn = get_db()
+    existing = conn.execute('SELECT * FROM users WHERE username=? AND id!=?',
+                            (new_username, session['user_id'])).fetchone()
+    if existing:
+        conn.close()
+        flash('Username already taken!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn.execute('UPDATE users SET username=? WHERE id=?',
+                 (new_username, session['user_id']))
+    conn.commit()
+    conn.close()
+    session['username'] = new_username
+    flash('✅ Username changed successfully!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.route('/settings/add-user', methods=['POST'])
+@login_required
+def add_user():
+    if session.get('role') != 'admin':
+        flash('Only admin can add users!', 'error')
+        return redirect(url_for('settings_page'))
+
+    username = request.form['username'].strip()
+    password = request.form['password']
+    role = request.form.get('role', 'staff')
+
+    if len(username) < 3 or len(password) < 4:
+        flash('Username (3+) and password (4+) required!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn = get_db()
+    existing = conn.execute('SELECT * FROM users WHERE username=?', (username,)).fetchone()
+    if existing:
+        conn.close()
+        flash('Username already exists!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn.execute('INSERT INTO users (username, password, role) VALUES (?,?,?)',
+                 (username, generate_password_hash(password), role))
+    conn.commit()
+    conn.close()
+    flash(f'✅ User "{username}" added!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.route('/settings/delete-user/<int:id>', methods=['POST'])
+@login_required
+def delete_user(id):
+    if session.get('role') != 'admin':
+        flash('Only admin can delete users!', 'error')
+        return redirect(url_for('settings_page'))
+
+    if id == session['user_id']:
+        flash('You cannot delete yourself!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn = get_db()
+    conn.execute('DELETE FROM users WHERE id=?', (id,))
+    conn.commit()
+    conn.close()
+    flash('✅ User deleted!', 'success')
+    return redirect(url_for('settings_page'))
+
+@app.route('/settings/reset-user-password/<int:id>', methods=['POST'])
+@login_required
+def reset_user_password(id):
+    if session.get('role') != 'admin':
+        flash('Only admin can reset passwords!', 'error')
+        return redirect(url_for('settings_page'))
+
+    new_pass = request.form['new_password']
+    if len(new_pass) < 4:
+        flash('Password must be at least 4 characters!', 'error')
+        return redirect(url_for('settings_page'))
+
+    conn = get_db()
+    conn.execute('UPDATE users SET password=? WHERE id=?',
+                 (generate_password_hash(new_pass), id))
+    conn.commit()
+    conn.close()
+    flash('✅ Password reset successfully!', 'success')
+    return redirect(url_for('settings_page'))
+
+
+
+
+
 # ---------- Reset ----------
 @app.route('/reset')
 @login_required
