@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h1>⚙️ Settings</h1>
+
+<!-- ============ CHANGE PASSWORD ============ -->
+<div class="settings-section">
+    <h2>🔐 Change Password</h2>
+    <form method="POST" action="{{ url_for('change_password') }}" class="form-row">
+        <input name="old_password" type="password" placeholder="Current password" required>
+        <input name="new_password" type="password" placeholder="New password" required>
+        <input name="confirm_password" type="password" placeholder="Confirm new password" required>
+        <button type="submit">🔑 Change Password</button>
+    </form>
+</div>
+
+<!-- ============ CHANGE USERNAME ============ -->
+<div class="settings-section">
+    <h2>👤 Change Username</h2>
+    <p class="hint-text">Current: <b>{{ session.username }}</b></p>
+    <form method="POST" action="{{ url_for('change_username') }}" class="form-row">
+        <input name="new_username" placeholder="New username" required>
+        <button type="submit">✏️ Change Username</button>
+    </form>
+</div>
+
+<!-- ============ USERS LIST (Admin only) ============ -->
+{% if session.role == 'admin' %}
+<div class="settings-section">
+    <h2>👥 Users (Admin)</h2>
+
+    <!-- Add user form -->
+    <form method="POST" action="{{ url_for('add_user') }}" class="form-row">
+        <input name="username" placeholder="New username" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <select name="role">
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit">➕ Add User</button>
+    </form>
+
+    <!-- Users table -->
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>#{{ u.id }}</td>
+                <td>
+                    <b>{{ u.username }}</b>
+                    {% if u.id == session.user_id %}
+                    <span class="badge-you">You</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge-role {% if u.role == 'admin' %}badge-admin{% else %}badge-staff{% endif %}">
+                        {{ u.role }}
+                    </span>
+                </td>
+                <td>
+                    <!-- Reset password button -->
+                    <button type="button" class="btn-small"
+                            onclick="resetPassword({{ u.id }}, '{{ u.username }}')">
+                        🔑 Reset
+                    </button>
+
+                    {% if u.id != session.user_id %}
+                    <form method="POST" action="{{ url_for('delete_user', id=u.id) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Delete user {{ u.username }}?')">
+                        <button type="submit" class="btn-small btn-danger">🗑️</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- ============ INFO ============ -->
+<div class="settings-section">
+    <h2>ℹ️ Info</h2>
+    <div class="info-box">
+        <p><b>Business:</b> {{ business_name }}</p>
+        <p><b>Tagline:</b> {{ tagline }}</p>
+        <p><b>Phone:</b> {{ phone }}</p>
+        <p><b>Logged in as:</b> {{ session.username }} ({{ session.role }})</p>
+    </div>
+</div>
+
+<!-- ============ RESET PASSWORD MODAL ============ -->
+<div id="resetModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>🔑 Reset Password</h3>
+        <p id="resetUserName" class="hint-text"></p>
+        <form method="POST" id="resetForm" class="form-row" style="flex-direction: column;">
+            <input type="password" name="new_password" placeholder="New password" required>
+            <button type="submit">Reset</button>
+            <button type="button" class="btn-cancel" onclick="closeResetModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function resetPassword(id, username) {
+    document.getElementById('resetForm').action = '/settings/reset-user-password/' + id;
+    document.getElementById('resetUserName').innerText = 'User: ' + username;
+    document.getElementById('resetModal').style.display = 'flex';
+}
+function closeResetModal() {
+    document.getElementById('resetModal').style.display = 'none';
+}
+window.onclick = function(e) {
+    const m = document.getElementById('resetModal');
+    if (e.target === m) m.style.display = 'none';
+}
+</script>
+{% endblock %}
